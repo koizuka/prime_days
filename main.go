@@ -27,12 +27,25 @@ func isPrime(n int) bool {
 	return true
 }
 
+type IsPrimeResult struct {
+	Value       int
+	IsPrimeChan chan bool
+}
+
 func getPrimeDates(start, end time.Time) []int {
-	dates := make([]int, 0)
+	isPrimeResults := make([]IsPrimeResult, 0)
 	for t := start; t.Before(end); t = t.AddDate(0, 0, 1) {
 		date, _ := strconv.Atoi(t.Format("20060102"))
-		if isPrime(date) {
-			dates = append(dates, date)
+		dc := IsPrimeResult{date, make(chan bool)}
+		isPrimeResults = append(isPrimeResults, dc)
+		go func() {
+			dc.IsPrimeChan <- isPrime(dc.Value)
+		}()
+	}
+	dates := make([]int, 0)
+	for _, dc := range isPrimeResults {
+		if <-dc.IsPrimeChan {
+			dates = append(dates, dc.Value)
 		}
 	}
 	return dates
