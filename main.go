@@ -1,11 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
-	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -51,11 +52,28 @@ func getPrimeDates(start, end time.Time) []int {
 	return dates
 }
 
+func groupByMonth(dates []int) [][]int {
+	months := make([][]int, 12)
+	for i := range months {
+		months[i] = []int{}
+	}
+	for _, d := range dates {
+		month := (d / 100) % 100
+		if month >= 1 && month <= 12 {
+			months[month-1] = append(months[month-1], d)
+		}
+	}
+	return months
+}
+
 func main() {
+	group := flag.Bool("group", false, "group output by month (one line per month)")
+	flag.Parse()
+
 	year := time.Now().Year()
-	if len(os.Args) > 1 {
+	if flag.NArg() > 0 {
 		var err error
-		year, err = strconv.Atoi(os.Args[1])
+		year, err = strconv.Atoi(flag.Arg(0))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -63,7 +81,20 @@ func main() {
 
 	thisYear := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
 	nextYear := thisYear.AddDate(1, 0, 0)
-	for _, d := range getPrimeDates(thisYear, nextYear) {
-		fmt.Printf("%d\n", d)
+	dates := getPrimeDates(thisYear, nextYear)
+
+	if *group {
+		fmt.Printf("%d prime dates in %d:\n", len(dates), year)
+		for _, monthDates := range groupByMonth(dates) {
+			strs := make([]string, len(monthDates))
+			for i, d := range monthDates {
+				strs[i] = strconv.Itoa(d)
+			}
+			fmt.Println(strings.Join(strs, " "))
+		}
+	} else {
+		for _, d := range dates {
+			fmt.Printf("%d\n", d)
+		}
 	}
 }

@@ -27,6 +27,27 @@ $ go run main.go 2016
 20161103
 ```
 
+### --group option
+
+Group output by month (one line per month, space-separated):
+
+```bash
+$ go run main.go --group 2016
+19 prime dates in 2016:
+
+
+20160319
+20160401 20160403
+20160529
+20160601 20160607 20160611
+20160709 20160727
+20160809 20160817 20160821
+20160923
+20161007 20161013 20161019 20161021 20161027
+20161103
+
+```
+
 ## Author
 
 [koizuka](https://github.com/koizuka)
